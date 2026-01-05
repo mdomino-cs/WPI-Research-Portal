@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% from 'bootstrap_wtf.html' import form_field %}
+
+{% block content %}
+
+{% if current_user.type == 'student' %}
+    <div class="page-header">
+        <h2>My Inbox</h2>
+        <p>Track your reference requests and application updates</p>
+    </div>
+
+    {% if studentInterviews %}
+        <h4 class="mb-3">Interview Requests</h4>
+        <div class="list-group mb-4">
+        {% for interview in studentInterviews %}
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <div>
+                        <h5 class="mb-1">{{ interview.position.title }}</h5>
+                        <p class="mb-1 text-muted">{{ interview.position.description|truncate(120) }}</p>
+                        <p class="mb-1"><strong>Status:</strong> {{ interview.status }}</p>
+                    </div>
+                </div>
+
+                <p class="mb-2"><strong>Details:</strong> {{ interview.details }}</p>
+
+                <div>
+                    <h6>Available Time Slots</h6>
+                    {% set slots = slots_by_app.get(interview.id, []) %}
+                    {% if slots %}
+                        <ul class="list-unstyled mb-2">
+                        {% for slot in slots %}
+                            <li class="d-flex justify-content-between align-items-center py-1">
+                                <div>
+                                    {{ slot.time.strftime('%Y-%m-%d %H:%M') }}
+                                    <small class="text-muted">with {{ slot.faculty.first_name }} {{ slot.faculty.last_name }}</small>
+                                </div>
+                                <form method="post" action="{{ url_for('main.accept_timeslot', slot_id=slot.id, app_id=interview.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-primary">Accept</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-2">No available time slots yet. Please check back later.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+
+        
+    {% else %}
+        <div class="alert alert-info">No interview requests at the moment.</div>
+    {% endif %}
+
+    {% if applicationsDenied %}
+        <div class="mt-4">
+            <h4 class="mb-3">Denied Applications</h4>
+            <div class="list-group mb-4">
+            {% for denied_app in applicationsDenied %}
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between">
+                        <div>
+                            <h5 class="mb-1">{{ denied_app.position.title }}</h5>
+                            <p class="mb-1 text-muted">{{ denied_app.position.description|truncate(120) }}</p>
+                            <p class="mb-1"><strong>Status:</strong> {{ denied_app.status }}</p>
+                        </div>
+                    </div>
+
+                    <p class="mb-2"><strong>Details:</strong> {{ denied_app.details }}</p>
+                    <form method="post" action="{{ url_for('main.remove_denied_applications', app_id=denied_app.id) }}">
+                        <button type="submit" class="btn btn-sm btn-danger">Remove from Inbox</button>
+                    </form>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <h4 class="mb-3">Reference Requests</h4>
+    {% if studentReferences %}
+        <div class="list-group">
+            {% for reference in studentReferences %}
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1"><strong>{{ reference.application.position.title }}</strong></h6>
+                        <p class="mb-0 text-muted">Reference from: {{ reference.faculty.first_name }} {{ reference.faculty.last_name }}</p>
+                    </div>
+                    <div>
+                        {% if reference.status|lower == 'approved' %}
+                            <span class="badge bg-success">Approved</span>
+                        {% elif reference.status|lower == 'pending' or reference.status|lower == 'awaiting' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif reference.status|lower == 'denied' %}
+                            <span class="badge bg-danger">Denied</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ reference.status }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No Messages</h4>
+            <p class="mb-0">Your inbox is empty. Reference requests will appear here when faculty respond to your applications.</p>
+        </div>
+    {% endif %}
+{% elif current_user.type == 'faculty' %}
+    <div class="page-header">
+        <h2>Faculty Inbox</h2>
+        <p>Review pending applications and reference requests</p>
+    </div>
+
+    {% if positions %}
+        <h4 class="mb-3">Pending Applications</h4>
+        <div class="list-group mb-4">
+            {% set has_pending = namespace(value=false) %}
+            {% for position in positions %}
+                {% for application in position.applications %}
+                    {% if application.status == 'Pending' %}
+                        {% set has_pending.value = true %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="mb-1">{{ position.title }}</h5>
+                                    <h6 class="mb-2 text-muted">{{ application.student.first_name }} {{ application.student.last_name }}</h6>
+                                </div>
+                                <span class="badge bg-warning text-dark">{{ application.status }}</span>
+                            </div>
+                            
+                            <p class="mb-2"><strong>Email:</strong> {{ application.student.email }}</p>
+                            <p class="mb-2"><strong>Statement of Interest:</strong> {{ application.details }}</p>
+                            
+                            <p class="mb-1"><strong>References:</strong></p>
+                            {% if application.reference_requests %}
+                                <ul class="mb-2">
+                                {% for ref in application.reference_requests %}
+                                    <li>{{ ref.faculty.first_name }} {{ ref.faculty.last_name }} ({{ ref.faculty.email }}) - 
+                                        {% if ref.status|lower == 'approved' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% elif ref.status|lower == 'pending' or ref.status|lower == 'awaiting' %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% elif ref.status|lower == 'denied' %}
+                                            <span class="badge bg-danger">Denied</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ ref.status }}</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted mb-2">None</p>
+                            {% endif %}
+
+                            <p class="mb-1"><strong>Other Approved Positions:</strong></p>
+                            {% if application.student %}
+                                {% set approved_apps = namespace(found=false) %}
+                                {% for app_check in applications %}
+                                    {% if app_check.student_id == application.student_id and app_check.status == 'Approved' and app_check.id != application.id %}
+                                        {% if not approved_apps.found %}
+                                            <ul class="mb-2">
+                                            {% set approved_apps.found = true %}
+                                        {% endif %}
+                                        <li>{{ app_check.position.title }}</li>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if approved_apps.found %}
+                                    </ul>
+                                {% else %}
+                                    <p class="text-muted mb-2">None</p>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted mb-2">None</p>
+                            {% endif %}
+
+                            <div class="d-flex gap-2 mt-3">
+                                <form method="post" action="{{ url_for('faculty.approve_application', app_id=application.id) }}" class="m-0">
+                                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                                <a href="{{ url_for('faculty.interview_application', app_id=application.id) }}" class="btn btn-sm btn-warning">Ask for Interview</a>
+                                <form method="post" action="{{ url_for('faculty.deny_application', app_id=application.id) }}" class="m-0">
+                                    <button type="submit" class="btn btn-sm btn-danger">Deny</button>
+                                </form>
+                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('faculty.profile_view', app_id=application.id) }}">View Profile</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            {% if not has_pending.value %}
+                <div class="list-group-item">
+                    <p class="text-muted mb-0">No pending applications</p>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">No Applications</h4>
+            <p class="mb-0">You haven't created any positions yet.</p>
+        </div>
+    {% endif %}
+
+    <h4 class="mb-3 mt-4">Reference Requests</h4>
+    {% if references %}
+        <div class="list-group mb-4">
+            {% set has_pending_ref = namespace(value=false) %}
+            {% for ref in references %}
+                {% if ref.status|lower == 'pending' or ref.status|lower == 'awaiting' %}
+                    {% set has_pending_ref.value = true %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1"><strong>{{ ref.application.position.title }}</strong></h6>
+                                <p class="mb-0">Request from: {{ ref.application.student.first_name }} {{ ref.application.student.last_name }}</p>
+                                <small class="text-muted">Student Email: {{ ref.application.student.email }}</small>
+                            </div>
+                            <div>
+                                <form method="post" action="{{ url_for('faculty.approve_reference', ref_id=ref.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                                <form method="post" action="{{ url_for('faculty.deny_reference', ref_id=ref.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger">Deny</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            {% if not has_pending_ref.value %}
+                <div class="list-group-item">
+                    <p class="text-muted mb-0">No pending reference requests.</p>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">No reference requests found.</div>
+    {% endif %}
+{% else %}
+    <h2>Inbox</h2>
+{% endif %}
+
+{% endblock %}

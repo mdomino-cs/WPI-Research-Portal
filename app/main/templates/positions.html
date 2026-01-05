@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #AC2B37;">
+    <h4 class="mb-0">Research Positions</h4>
+    <div id="toggleBtnContainer"></div>
+  </div>
+  <div class="card-body">
+<div class="row">
+  {% if current_user.type == 'student' %}
+  
+  <div class="col-12 mb-3">
+    <form method="get" action="{{ url_for('main.positions') }}" class="row g-3 align-items-end bg-light p-3 rounded shadow-sm">
+      <div class="col-md-2">
+        <label for="team_size" class="form-label">Team Size</label>
+        <input type="number" class="form-control" id="team_size" name="team_size" value="{{ request.args.get('team_size', '') }}" placeholder="Min size">
+      </div>
+      <div class="col-md-2">
+        <label for="min_gpa" class="form-label">Min GPA</label>
+        <input type="number" step="0.1" class="form-control" id="min_gpa" name="min_gpa" value="{{ request.args.get('min_gpa', '') }}" placeholder="Min GPA">
+      </div>
+      <div class="col-md-2">
+        <label for="start_date" class="form-label">Start Date</label>
+        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ request.args.get('start_date', '') }}">
+      </div>
+      <div class="col-md-2">
+        <label for="end_date" class="form-label">End Date</label>
+        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ request.args.get('end_date', '') }}">
+      </div>
+      <div class="col-md-2">
+        <label for="filter" class="form-label">View</label>
+        <select class="form-select" id="filter" name="filter">
+          <option value="relevant" {% if request.args.get('filter', 'relevant') == 'relevant' %}selected{% endif %}>Relevant Positions</option>
+          <option value="applied" {% if request.args.get('filter') == 'applied' %}selected{% endif %}>Applied Positions</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+      </div>
+    </form>
+  </div>
+
+  {% for position in positions %}
+  <div class="col-md-4 mb-3">
+    <div class="card h-100 border border-3">
+      <div class="card-body">
+        <h5 class="card-title">
+          <a href="{{ url_for('main.position_details', position_id=position.id) }}">{{ position.title }}</a>
+        </h5>
+        <p class="card-text">{{ position.description }}</p>
+        
+        {# --- Check for User's Application --- #}
+        {# Filters the position's application list to find one matching the current user #}
+        {% set my_app = position.applications | selectattr("student_id", "equalto", current_user.id) | first %}
+
+        {% if my_app %}
+          <div class="alert alert-info py-1 px-2 mb-2">
+            <small><strong>Status:</strong> {{ my_app.status }}</small>
+          </div>
+        {% endif %}
+
+        <div class="mb-2">
+          <small class="text-muted">Team Size: {{ position.teamSize }}</small>
+        </div>
+        <div class="mb-2">
+          <small class="text-muted">Min GPA: {{ position.minGPA }}</small>
+        </div>
+        <div class="mb-2">
+          <small class="text-muted">Start: {{ moment(position.start_date).format('MMMM DD, YYYY') }}</small>
+        </div>
+        <div class="mb-2">
+          <small class="text-muted">End: {{ moment(position.end_date).format('MMMM DD, YYYY') }}</small>
+        </div>
+        <div>
+          {% if position.id in applied_positions %}
+            <span class="badge bg-success">Applied</span>
+          {% else %}
+            <a href="{{ url_for('main.position_details', position_id=position.id) }}" class="btn btn-primary btn-sm">View Details</a>
+          {% endif %}
+        </div>
+
+        {# --- Withdraw Button --- #}
+        {# Check for 'submitted' to match your current database value #}
+          {% if my_app and my_app.status == 'Pending' %}
+            <form action="{{ url_for('main.withdraw_application', app_id=my_app.id) }}" method="post">
+              <button type="submit" class="btn btn-outline-danger btn-sm w-100 mt-2">Withdraw Application</button>
+            </form>
+          {% endif %}
+
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  
+  {% else %}
+  
+  {# --- Faculty View (Unchanged) --- #}
+  {% for position in positions %}
+  {% if position.faculty_id == current_user.id %}
+  <div class="col-md-4 mb-3">
+    <div class="card h-100 border border-3">
+      <div class="card-body">
+        <h5 class="card-title">
+          <a href="{{ url_for('main.position_details', position_id=position.id) }}">{{ position.title }}</a>
+        </h5>
+        <p class="card-text">{{ position.description }}</p>
+        <div class="mb-2">
+          <small class="text-muted">Team Size: {{ position.teamSize }}</small>
+        </div>
+        <div class="mb-2">
+          <small class="text-muted">Min GPA: {{ position.minGPA }}</small>
+        </div>
+        <div class="mb-2">
+          <small class="text-muted">Start: {{ moment(position.start_date).format('MMMM DD, YYYY') }}</small>
+        </div>
+        <div class="mb-2">
+          <small class="text-muted">End: {{ moment(position.end_date).format('MMMM DD, YYYY') }}</small>
+        </div>
+        <div class="d-flex gap-2">
+          
+          <form action="{{ url_for('faculty.delete_position', position_id=position.id) }}" method="post" class="m-0">
+            <input class="btn btn-sm btn-outline-danger" type="submit" value="Delete">
+          </form>
+          <form action="{{ url_for('faculty.edit_position', position_id=position.id) }}" method="post" class="m-0">
+            <input class="btn btn-sm btn-outline-success" type="submit" value="Edit">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+  {% endif %}
+</div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('toggleBtnContainer');
+    if (container && document.querySelector('.badge.bg-success')) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'btn btn-secondary btn-sm';
+        toggleBtn.id = 'hideAppliedBtn';
+        toggleBtn.textContent = 'Hide Applied Positions';
+        toggleBtn.onclick = toggleAppliedPositions;
+        container.appendChild(toggleBtn);
+    }
+});
+
+function toggleAppliedPositions() {
+    const btn = document.getElementById('hideAppliedBtn');
+    const cards = document.querySelectorAll('.col-md-4');
+    let hideApplied = btn.textContent.includes('Hide');
+    
+    cards.forEach(card => {
+        const badge = card.querySelector('.badge.bg-success');
+        if (badge) {
+            card.style.display = hideApplied ? 'none' : '';
+        }
+    });
+    
+    btn.textContent = hideApplied ? 'Show Applied Positions' : 'Hide Applied Positions';
+    btn.className = 'btn btn-secondary btn-sm';
+}
+</script>
+
+{% endblock %}

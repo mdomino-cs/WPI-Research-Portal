@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% from 'bootstrap_wtf.html' import form_field %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card shadow-sm">
+        <div class="card-header wpi-red-header text-white">
+          <h4 class="mb-0">Edit Profile</h4>
+        </div>
+        <div class="card-body">
+          
+          <h5 class="border-bottom pb-2 mb-3">Profile Information</h5>
+          <form method="post" action="{{ url_for('main.profile_edit') }}" novalidate>
+            {{ form.hidden_tag() }}
+            
+            <div class="row">
+              <div class="col-md-{% if user.is_faculty() %}12{% else %}6{% endif %}">
+                {{ form_field(form.phone) }}
+              </div>
+              {% if not user.is_faculty() %}
+              <div class="col-md-6">
+                {{ form_field(form.gpa) }}
+              </div>
+              {% endif %}
+            </div>
+            
+            {% if not user.is_faculty() %}
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Majors</label>
+                  <div class="border rounded p-2" style="max-height: 250px; overflow-y: auto; background-color: #f8f9fa;">
+                    <ul class="list-unstyled mb-0">
+                      {% for value, label in form.majors.choices %}
+                      <li class="mb-1">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" name="majors" value="{{ value }}" 
+                                 id="major_{{ value }}" {% if value in (form.majors.data or []) %}checked{% endif %}>
+                          <label class="form-check-label" for="major_{{ value }}">{{ label }}</label>
+                        </div>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Research Topics</label>
+                  <div class="border rounded p-2" style="max-height: 250px; overflow-y: auto; background-color: #f8f9fa;">
+                    <ul class="list-unstyled mb-0">
+                      {% for value, label in form.research_topics.choices %}
+                      <li class="mb-1">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" name="research_topics" value="{{ value }}" 
+                                 id="interest_{{ value }}" {% if value in (form.research_topics.data or []) %}checked{% endif %}>
+                          <label class="form-check-label" for="interest_{{ value }}">{{ label }}</label>
+                        </div>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label fw-bold">Programming Languages</label>
+                  <div class="border rounded p-2" style="max-height: 250px; overflow-y: auto; background-color: #f8f9fa;">
+                    <ul class="list-unstyled mb-0">
+                      {% for value, label in form.languages.choices %}
+                      <li class="mb-1">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" name="languages" value="{{ value }}" 
+                                 id="language_{{ value }}" {% if value in (form.languages.data or []) %}checked{% endif %}>
+                          <label class="form-check-label" for="language_{{ value }}">{{ label }}</label>
+                        </div>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            
+            <div class="mt-3">
+              {{ form.submit(class="btn btn-primary btn-lg") }}
+            </div>
+          </form>
+          
+          <hr class="my-4">
+          
+          {% if not user.is_faculty() %}
+          <h5 class="border-bottom pb-2 mb-3">Add Advanced Coursework</h5>
+          <form method="post" action="{{ url_for('main.add_course') }}" novalidate>
+            {{ course_form.hidden_tag() }}
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="{{ course_form.course_name.id }}" class="form-label">Course Name</label>
+                <select id="{{ course_form.course_name.id }}" name="{{ course_form.course_name.name }}" class="form-select">
+                  <option value="">-</option>
+                  {% for c in course_templates %}
+                  <option value="{{ c.id }}" data-instructor="{{ (c.instructor or '')|e }}" data-term="{{ (c.term or '')|e }}">{{ c.course_name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3">
+                {{ form_field(course_form.grade, false) }}
+              </div>
+              <div class="col-md-3">
+                {{ form_field(course_form.term, false) }}
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-12">
+                {{ form_field(course_form.instructor, false) }}
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              {{ form_field(course_form.submit, false) }}
+            </div>
+          </form>
+          <script>
+            (function(){
+              const sel = document.getElementById("{{ course_form.course_name.id }}");
+              const instructorField = document.getElementById("{{ course_form.instructor.id }}");
+              const termField = document.getElementById("{{ course_form.term.id }}");
+              if(!sel) return;
+              function fill(){
+                const opt = sel.selectedOptions[0];
+                if(!opt) return;
+                instructorField.value = opt.dataset.instructor || '';
+                termField.value = opt.dataset.term || '';
+              }
+              sel.addEventListener('change', fill);
+              if(sel.selectedIndex > 0) fill();
+            })();
+          </script>
+          
+          <h5 class="border-bottom pb-2 mt-4 mb-3">Current Coursework</h5>
+          {% if courses %}
+            <div class="table-responsive">
+              <table class="table table-hover table-striped">
+                <thead class="table-light">
+                  <tr>
+                    <th>Course</th>
+                    <th>Grade</th>
+                    <th>Instructor</th>
+                    <th>Term</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for c in courses %}
+                  <tr>
+                    <td>{{ c.course_name }}</td>
+                    <td>{{ c.grade or '—' }}</td>
+                    <td>{{ c.instructor or '—' }}</td>
+                    <td>{{ c.term or '—' }}</td>
+                    <td>
+                      <form method="post" action="{{ url_for('main.delete_course', course_id=c.id) }}" style="display:inline" class="delete-course-form">
+                        <button type="submit" class="btn btn-sm btn-danger btn-delete-course" data-course-id="{{ c.id }}">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted">No coursework added yet.</p>
+          {% endif %}
+          {% endif %}
+          
+          <div class="mt-4">
+            <a href="{{ url_for('main.profile_view') }}" class="btn btn-secondary btn-lg">Back to Profile</a>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

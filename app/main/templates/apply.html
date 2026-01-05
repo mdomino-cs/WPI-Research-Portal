@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from 'bootstrap_wtf.html' import form_field %}
+
+{% block title %}Apply for Position{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            
+            <h2 class="mb-4">Submit Research Application</h2>
+            
+            <p class="text-muted">Please provide a short statement of interest (Max 500 characters) to apply for this position.</p>
+
+            <form method="post" action="" novalidate>
+                {{ form.hidden_tag() }}
+                
+                <!-- Statement of Interest Field (details) -->
+                <div class="mb-4">
+                    <label for="{{ form.details.id }}" class="form-label fs-5">{{ form.details.label }} *</label>
+                    
+                    {% if form.details %}
+                        {# Use textarea for better UX, even if defined as StringField in Python #}
+                        {{ form.details(class="form-control", rows=6, placeholder="Explain your interest and what you hope to gain...") }}
+                        
+                        {% for error in form.details.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    <br>
+
+                    {% if needRef %}
+                        <p>Faculty:</p>
+                        {{ form.users(size=64) }}<br>
+                        {% for error in form.users.errors %}
+                            <span style="color: red;">[{{ error }}]</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                {{ form.submit(class="btn btn-primary btn-lg mt-3") }}
+            </form>
+            
+            <a href="{{ url_for('main.positions') }}" class="btn btn-link mt-3">← Back to Listings</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

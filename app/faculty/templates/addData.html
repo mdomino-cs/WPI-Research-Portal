@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Data{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="header-section">
+        <h1 class="mb-2">System Data Management</h1>
+        <p class="mb-0 lead">Centralized hub for managing courses, programming languages, and research topics across the platform</p>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card management-card">
+                <div class="card-body text-center py-4 d-flex flex-column">
+                    <h4 class="card-title fw-bold">Courses</h4>
+                    <p class="card-text text-muted mb-4 flex-grow-1">Add, edit, or remove courses that students can list on their profiles. Maintain an up-to-date course catalog.</p>
+                    <a href="{{ url_for('faculty.add_course') }}" class="btn wpi-red-btn btn-lg w-100">Manage Courses</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card management-card">
+                <div class="card-body text-center py-4 d-flex flex-column">
+                    <h4 class="card-title fw-bold">Programming Languages</h4>
+                    <p class="card-text text-muted mb-4 flex-grow-1">Control the programming languages available for research position requirements and student qualifications.</p>
+                    <a href="{{ url_for('faculty.add_language') }}" class="btn wpi-red-btn btn-lg w-100">Manage Languages</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card management-card">
+                <div class="card-body text-center py-4 d-flex flex-column">
+                    <h4 class="card-title fw-bold">Research Topics</h4>
+                    <p class="card-text text-muted mb-4 flex-grow-1">Define research areas and topics that can be associated with positions and student interests.</p>
+                    <a href="{{ url_for('faculty.add_topic') }}" class="btn wpi-red-btn btn-lg w-100">Manage Topics</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert alert-info mt-4" role="alert">
+        <strong>Note:</strong> Changes made here will immediately affect all position creation forms and student profiles across the system.
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <h3 class="mb-3 text-center">Faculty Login</h3>
+
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <!-- Faculty Dropdown -->
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.faculty_user.label }}</label>
+                            {{ form.faculty_user(class="form-select") }}
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.password.label }}</label>
+                            {{ form.password(class="form-control") }}
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-danger") }}
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

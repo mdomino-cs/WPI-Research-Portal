@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Faculty Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>My Research Positions</h2>
+      <a href="{{ url_for('faculty.create_position') }}" class="btn btn-primary">
+        Create New Position
+      </a>
+    </div>
+
+    {% if positions %}
+      <div class="row">
+        {% for position in positions %}
+        <div class="col-md-6 mb-3">
+          <div class="card">
+            <div class="card-header bg-dark text-white">
+              <h5 class="mb-0">{{ position.title }}</h5>
+            </div>
+            <div class="card-body">
+              <p class="card-text">{{ position.description[:150] }}{% if position.description|length > 150 %}...{% endif %}</p>
+              
+              <ul class="list-unstyled">
+                <li><strong>Duration:</strong> {{ position.start_date.strftime('%Y-%m-%d') }} to {{ position.end_date.strftime('%Y-%m-%d') }}</li>
+                <li><strong>Team Size:</strong> {{ position.teamSize }} student(s)</li>
+                <li><strong>Min GPA:</strong> {{ position.minGPA }}</li>
+                <li><strong>Reference:</strong> {{ 'Required' if position.reference else 'Not Required' }}</li>
+              </ul>
+              
+              <div class="btn-group" role="group">
+                <a href="{{ url_for('faculty.edit_position', position_id=position.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                <form method="post" action="{{ url_for('faculty.delete_position', position_id=position.id) }}" style="display:inline" onsubmit="return confirm('Are you sure you want to delete this position?');">
+                  <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">No positions yet</h4>
+        <p>You haven't created any research positions. Click "Create New Position" to get started!</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

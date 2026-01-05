@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from 'bootstrap_wtf.html' import quick_form, form_field %}
+
+
+{% block content %}
+
+
+<div class="home-hero-section">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <div class="welcome-card">
+          <h1 class="display-4 fw-bold mb-4" style="color: #AC2B37;">Welcome to WPI Research Positions</h1>
+          <p class="lead text-muted mb-4">
+            Connect with cutting-edge research opportunities at Worcester Polytechnic Institute. 
+            Join faculty members in groundbreaking projects across engineering, science, and technology.
+          </p>
+          <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            {% if current_user.is_authenticated %}
+              <a href="{{ url_for('main.positions') }}" class="btn btn-lg" style="background-color: #AC2B37; color: white;">Browse Positions</a>
+            {% else %}
+              <a href="{{ url_for('auth.login') }}" class="btn btn-lg" style="background-color: #AC2B37; color: white;">Login</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <img src="{{ url_for('static', filename='img/WPI Areial Pic.jpg') }}" alt="WPI Campus Aerial View" class="wpi-aerial-image" width="700">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}

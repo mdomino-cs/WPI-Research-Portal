@@ -1,0 +1,98 @@
+
+.navbar-logo {
+    height: 80px;       /* adjust to fit your navbar */
+    width: 120px;        /* keeps correct aspect ratio */
+    margin-right: 10px; /* optional spacing */
+}
+/* Style for the button-like nav items */
+.btn-item {
+  border: 1px solid white;
+  border-radius: 4px;
+  margin-left: 0.5rem;  /* ms-2 */
+  display: inline-block;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+/* Make the <a> fill the entire <li> */
+.btn-item a {
+  display: block;        /* fills the parent <li> */
+  padding: 0.25rem 0.5rem;
+  color: white;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+/* Hover effect on the whole button */
+.btn-item:hover {
+  transform: scale(1.1);
+  background-color: #8B0000; /* Dark red */
+  cursor: pointer;
+}
+
+/* Keep text white on hover */
+.btn-item:hover a {
+  color: white;
+}
+
+/* WPI Red Theme Styles */
+.wpi-red { 
+    background-color: #AC2B37; 
+}
+
+.wpi-red-header { 
+    background-color: #AC2B37;
+    color: white;
+}
+
+.wpi-red-header h5,
+.wpi-red-header h6 {
+    color: white;
+}
+
+.wpi-red-btn { 
+    background-color: #AC2B37; 
+    border-color: #AC2B37;
+    color: white;
+}
+
+.wpi-red-btn:hover { 
+    background-color: #8B2230; 
+    border-color: #8B2230;
+    color: white;
+}
+
+/* Management Cards */
+.management-card {
+    border: 2px solid #AC2B37;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.management-card:hover {
+    box-shadow: 0 8px 16px rgba(172, 43, 55, 0.3);
+    transform: translateY(-5px);
+}
+
+.card-icon {
+    font-size: 3rem;
+    color: #AC2B37;
+    margin-bottom: 1rem;
+}
+
+/* Page Headers */
+.page-header {
+    background: linear-gradient(135deg, #AC2B37 0%, #8B2230 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.header-section {
+    background: linear-gradient(135deg, #AC2B37 0%, #8B2230 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}

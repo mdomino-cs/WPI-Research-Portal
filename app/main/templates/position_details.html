@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="page-header mb-4">
+        <h2 class="mb-1">{{ position.title }}</h2>
+		<p class="text-white">Position Details & Requirements</p>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <h5 class="card-title mb-3">Overview</h5>
+
+            <p><strong>Description:</strong> {{ position.description }}</p>
+
+            <p><strong>Major(s):</strong>
+                {% if position.majors %}
+                    {% for m in position.majors %}
+                        {{ m.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">None</span>
+                {% endif %}
+            </p>
+
+            <p><strong>Start Date:</strong> {{ position.start_date }}</p>
+            <p><strong>End Date:</strong> {{ position.end_date }}</p>
+            <p><strong>Team Size:</strong> {{ position.teamSize }}</p>
+            <p><strong>Minimum GPA:</strong> {{ position.minGPA }}</p>
+            <p><strong>Reference Required:</strong> {{ position.reference }}</p>
+
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <h5 class="card-title mb-3">Skills & Requirements</h5>
+
+            <p><strong>Languages:</strong>
+                {% if position.languages %}
+                    {% for lang in position.languages %}
+                        {{ lang.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">None</span>
+                {% endif %}
+            </p>
+
+            <p><strong>Research Topics:</strong>
+                {% if position.research_topics %}
+                    {% for t in position.research_topics %}
+                        {{ t.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">None</span>
+                {% endif %}
+            </p>
+
+            <p><strong>Courses:</strong>
+                {% if position.courses %}
+                    {% for c in position.courses %}
+                        {{ c.course_name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">None</span>
+                {% endif %}
+            </p>
+
+        </div>
+    </div>
+
+    {% if has_applied %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Reference Requests</h5>
+
+            {% if references %}
+                <ul class="list-group">
+                    {% for ref in references %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ ref.faculty.first_name }} {{ ref.faculty.last_name }}</strong>  
+                            <span class="text-muted">({{ ref.faculty.email }})</span>
+                        </div>
+                        <span class="badge 
+                            {% if ref.status|lower == 'approved' %}bg-success
+                            {% elif ref.status|lower == 'pending' or ref.status|lower == 'awaiting' %}bg-warning text-dark
+                            {% elif ref.status|lower == 'denied' %}bg-danger
+                            {% else %}bg-secondary{% endif %}">
+                            {% if ref.status|lower == 'awaiting' %}Pending{% else %}{{ ref.status }}{% endif %}
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted mb-0">No reference requests found for this application.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if current_user.role == 'student' and not has_applied %}
+        <a href="{{ url_for('main.position_application', position_id_=position.id) }}" 
+           class="btn btn-primary mb-4">
+            Apply for this Position
+        </a>
+    {% endif %}
+
+</div>
+{% endblock %}

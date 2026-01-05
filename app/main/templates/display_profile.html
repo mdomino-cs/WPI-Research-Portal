@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-10 offset-md-1">
+    <div class="card shadow-sm">
+      <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #AC2B37;">
+        <h4 class="mb-0">{% if user.is_faculty() %}Faculty Profile{% else %}Student Profile{% endif %}</h4>
+        {% if current_user.id == user.id %}
+        <a href="{{ url_for('main.profile_edit') }}" class="btn btn-sm btn-light">Edit Profile</a>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        
+        <div class="mb-4">
+          <h5 class="border-bottom pb-2">Basic Information</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+              <p><strong>Username:</strong> {{ user.username }}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Email:</strong> {{ user.email }}</p>
+              <p><strong>Phone:</strong> {{ user.phone }}</p>
+            </div>
+          </div>
+        </div>
+
+        {% if not user.is_faculty() %}
+        <div class="mb-4">
+          <h5 class="border-bottom pb-2">Academic Information</h5>
+          <p><strong>GPA:</strong> 
+            {% if profile.gpa is not none %}
+              {{ '%.2f'|format(profile.gpa) }}
+            {% else %}
+              —
+            {% endif %}
+          </p>
+          
+          <div class="row">
+            <div class="col-md-4">
+              <p><strong>Majors:</strong></p>
+              {% set majors = profile.majors %}
+              {% if majors %}
+                <ul class="list-unstyled ms-3">
+                  {% for m in majors %}<li>• {{ m.name }}</li>{% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-muted ms-3">Not specified</p>
+              {% endif %}
+            </div>
+
+            <div class="col-md-4">
+              <p><strong>Research Topics:</strong></p>
+              {% set research_topics = profile.research_topics %}
+              {% if research_topics %}
+                <ul class="list-unstyled ms-3">
+                  {% for i in research_topics %}<li>• {{ i.name }}</li>{% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-muted ms-3">Not specified</p>
+              {% endif %}
+            </div>
+
+            <div class="col-md-4">
+              <p><strong>Programming Languages:</strong></p>
+              {% set languages = profile.languages %}
+              {% if languages %}
+                <ul class="list-unstyled ms-3">
+                  {% for l in languages %}<li>• {{ l.name }}</li>{% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-muted ms-3">Not specified</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <h5 class="border-bottom pb-2">Advanced Coursework</h5>
+          {% if courses %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th>Course</th>
+                    <th>Grade</th>
+                    <th>Instructor</th>
+                    <th>Term</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for c in courses %}
+                  <tr>
+                    <td>{{ c.course_name }}</td>
+                    <td>{{ c.grade or '—' }}</td>
+                    <td>{{ c.instructor or '—' }}</td>
+                    <td>{{ c.term or '—' }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted">No coursework added yet.</p>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Pending Applications{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="page-header">
+        <h2 class="mb-1">Pending Applications</h2>
+        <p class="mb-0">Review and manage applications for your research positions</p>
+    </div>
+    
+    {% if applications %}
+        {% for application in applications %}
+        <div class="card shadow mb-4">
+            <div class="card-header wpi-red-header text-white">
+                <h5 class="mb-0">{{ application.position.title }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Applicant:</strong> {{ application.student.first_name }} {{ application.student.last_name }}</p>
+                        <p><strong>Email:</strong> {{ application.student.email }}</p>
+                        <p><strong>Status:</strong> <span class="badge bg-warning">{{ application.status }}</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>References:</strong></p>
+                        {% if application.reference_requests %}
+                            <ul class="list-unstyled">
+                            {% for ref in application.reference_requests %}
+                                <li>{{ ref.faculty.first_name }} {{ ref.faculty.last_name }} ({{ ref.faculty.email }}) - 
+                                    <span class="badge 
+                                        {% if ref.status|lower == 'approved' %}bg-success
+                                        {% elif ref.status|lower == 'pending' or ref.status|lower == 'awaiting' %}bg-warning text-dark
+                                        {% elif ref.status|lower == 'denied' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {% if ref.status|lower == 'awaiting' %}Pending{% else %}{{ ref.status }}{% endif %}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <p><strong>Statement of Interest:</strong></p>
+                    <p class="border-start border-3 ps-3 text-muted">{{ application.details }}</p>
+                </div>
+                
+                <div class="d-flex gap-2 mt-3">
+                    <a class="btn btn-outline-secondary" href="{{ url_for('faculty.profile_view', app_id=application.id) }}">View Profile</a>
+                    <form method="post" action="{{ url_for('faculty.interview_application', app_id=application.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-warning">Ask for an interview</button>
+                    </form>
+                    <form method="post" action="{{ url_for('faculty.approve_application', app_id=application.id) }}" class="d-inline">
+                        <button type="submit" class="btn btn-success">Approve</button>
+                    </form>
+                    <form method="post" action="{{ url_for('faculty.deny_application', app_id=application.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to deny this application?');">
+                        <button type="submit" class="btn btn-danger">Deny</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <h5 class="alert-heading">No Pending Applications</h5>
+            <p class="mb-0">You don't have any pending applications at this time.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
